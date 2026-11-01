@@ -70,3 +70,6 @@ unregister_site() { # unregister_site HOST
   rm -f "$(site_file "$1")"
   caddy_reload
 }
+
+PIDS_DIR="$PROXY_STATE/pids"
+pid_file() { echo "$PIDS_DIR/$1.pid"; }

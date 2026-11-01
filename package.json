@@ -11,7 +11,9 @@
     "db:migrate": "node --env-file=.env.local scripts/migrate.mts",
     "db:psql": "docker compose exec db psql -U demo demo",
     "wt": "bash scripts/wt.sh",
-    "url": "bash scripts/url.sh"
+    "url": "bash scripts/url.sh",
+    "boot": "bash scripts/boot.sh",
+    "halt": "bash scripts/halt.sh"
   },
   "dependencies": {
     "next": "16.4.3",
