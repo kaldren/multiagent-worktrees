@@ -7,6 +7,17 @@ source "$(dirname "$0")/lib.sh"
 cd "$REPO_TOP"
 log() { echo "[boot] $*" >&2; }
 
+# 0. gitignored files listed in .worktreeinclude. Claude Code copies these itself, but
+#    other tools (IDEs, plain `git worktree add`) don't, so fill them in from the main checkout.
+if [[ "$REPO_TOP" != "$MAIN_ROOT" && -f .worktreeinclude ]]; then
+  while IFS= read -r f; do
+    [[ -z "$f" || "$f" == \#* || -e "$f" ]] && continue
+    [[ -e "$MAIN_ROOT/$f" ]] && { log "copying $f from main checkout"; cp -R "$MAIN_ROOT/$f" "$f"; }
+  done < .worktreeinclude
+fi
+[[ -f .env.local ]] || { log "no .env.local anywhere, using .env.example"; cp .env.example .env.local; }
+source "$(dirname "$0")/lib.sh"   # re-read now that .env.local exists (APP_DOMAIN)
+
 # 1. dependencies (pnpm's shared store makes this a few seconds in a fresh worktree)
 if [[ ! -d node_modules ]]; then
   log "installing dependencies"; pnpm install --prefer-offline --silent >&2
