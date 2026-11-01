@@ -6,6 +6,7 @@ You may be one of several agents, each in its own git worktree under `.claude/wo
 all sharing ONE Postgres database and ONE Caddy proxy.
 
 ## Running the app
+- Fresh worktree? Run `pnpm install` first (`claude --worktree` doesn't install dependencies).
 - Start the dev server with `pnpm dev` **as a background process**. Never run `next dev` directly
   and never pass a port: `scripts/dev.sh` picks a free port and registers your URL with Caddy.
 - Your app URL is `http://<worktree-name>.demo.localhost` (main checkout: `http://demo.localhost`).
