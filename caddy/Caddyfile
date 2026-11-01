@@ -1,0 +1,14 @@
+# Shared local reverse proxy: http://<name>.demo.localhost → that worktree's dev port.
+# *.localhost resolves to 127.0.0.1 natively (RFC 6761) — no /etc/hosts, no dnsmasq.
+# Routes are the files `pnpm dev` writes into ~/.local/state/localhost-proxy/sites/.
+{
+	admin localhost:2019
+	auto_https off
+}
+
+import {$HOME}/.local/state/localhost-proxy/sites/*.caddy
+
+# Anything without a registered route
+http:// {
+	respond "No dev server is registered for {host}. Run `pnpm dev` in that worktree (see `pnpm wt ls`)." 502
+}

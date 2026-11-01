@@ -1,0 +1,18 @@
+* { box-sizing: border-box; }
+body { margin: 0; font: 15px/1.5 system-ui, sans-serif; background: #f6f6f4; color: #1d1d1b; }
+main { max-width: 760px; margin: 0 auto; padding: 24px; }
+.banner { color: #fff; padding: 10px 24px; display: flex; gap: 20px; flex-wrap: wrap; align-items: baseline; }
+.banner strong { font-size: 18px; }
+.banner code { background: rgb(0 0 0 / .2); padding: 1px 6px; border-radius: 4px; }
+.banner nav { margin-left: auto; display: flex; gap: 14px; }
+.banner a { color: #fff; }
+h1 { margin: 8px 0 4px; }
+.muted { color: #6b6b66; }
+form.inline { display: flex; gap: 8px; margin: 16px 0; }
+input[type=text] { flex: 1; padding: 8px 10px; border: 1px solid #ccc; border-radius: 6px; font: inherit; }
+button { padding: 8px 14px; border: 0; border-radius: 6px; background: #1d1d1b; color: #fff; font: inherit; cursor: pointer; }
+button.ghost { background: transparent; color: #1d1d1b; border: 1px solid #ccc; padding: 3px 10px; }
+table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; }
+th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid #eee; }
+.pill { display: inline-block; padding: 0 8px; border-radius: 999px; color: #fff; font-size: 13px; }
+.box { background: #fff; border-radius: 8px; padding: 16px; margin: 16px 0; }

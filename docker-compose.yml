@@ -1,0 +1,24 @@
+# ONE database for the main checkout and every worktree.
+# The compose project name is pinned so `docker compose` run from any worktree
+# talks to the same container instead of creating a new one per directory.
+name: multiagent-demo
+
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: demo
+      POSTGRES_PASSWORD: demo
+      POSTGRES_DB: demo
+    ports:
+      - "127.0.0.1:54329:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U demo"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  pgdata:
