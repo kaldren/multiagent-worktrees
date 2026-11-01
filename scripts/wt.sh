@@ -49,6 +49,7 @@ MSG
       [[ -n "$pids" ]] && kill $pids 2>/dev/null || true
       unregister_site "$h"
     fi
+    [[ "$force" == "--force" ]] && git -C "$MAIN_ROOT" worktree unlock "$path" 2>/dev/null || true
     git -C "$MAIN_ROOT" worktree remove $force "$path"
     echo "Removed $path (branch worktree-$name kept — delete with: git branch -D worktree-$name)"
     ;;
