@@ -5,12 +5,14 @@
 You may be one of several agents, each in its own git worktree under `.claude/worktrees/<name>`,
 all sharing ONE Postgres database and ONE Caddy proxy.
 
-## Running the app
-- Fresh worktree? Run `pnpm install` first (`claude --worktree` doesn't install dependencies).
-- Start the dev server with `pnpm dev` **as a background process**. Never run `next dev` directly
-  and never pass a port: `scripts/dev.sh` picks a free port and registers your URL with Caddy.
+## Running the app — it's already running
+- A SessionStart hook (`.claude/settings.json` → `scripts/boot.sh`) has already installed deps,
+  started Postgres + Caddy, run migrations and started this checkout's dev server in the background.
+  Your session context says the URL. It hot-reloads, so just edit code and reload the URL.
 - Your app URL is `http://<worktree-name>.demo.localhost` (main checkout: `http://demo.localhost`).
-  Run `pnpm url` to print it. Use that URL for curl / browser checks, not `localhost:3000`.
+  Run `pnpm url` to print it. Use that URL for curl / browser checks, never `localhost:3000`.
+- Do NOT run `pnpm dev` / `next dev` yourself. If `pnpm url` says "not running", run `pnpm boot`.
+  Server output is in `.dev/dev.log`. After adding dependencies, `pnpm halt && pnpm boot` restarts it.
 - `pnpm wt ls` shows every worktree, its URL and whether its server is up.
 - Don't touch other worktrees' dev servers or `~/.local/state/localhost-proxy/sites/` files you didn't create.
 
@@ -23,6 +25,4 @@ all sharing ONE Postgres database and ONE Caddy proxy.
 - Test data you insert is visible to everyone. Prefix it so it's identifiable.
 
 ## If something is down
-- `curl http://demo.localhost` → connection refused: proxy not running → `pnpm proxy`.
-- 502 "No dev server is registered": start `pnpm dev` in that worktree.
-- DB connection refused: `pnpm db:up`.
+- Anything down (connection refused, 502, DB refused): run `pnpm boot`. It's idempotent.

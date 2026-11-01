@@ -22,43 +22,39 @@ the same time without them clashing over ports, cookies or databases.
 Caddy maps each hostname to whatever port that worktree's dev server happened to get, so the
 port itself stops mattering.
 
-## One-time setup
+## Usage: the only command is `claude`
 
 ```bash
-brew install caddy           # already done on this machine
-pnpm install
-pnpm db:up                   # Postgres 17 in Docker on 127.0.0.1:54329
-pnpm db:migrate
-pnpm proxy                   # Caddy on :80 (no sudo needed on macOS)
-pnpm dev                     # → http://demo.localhost
+claude --worktree search       # tab 1
+claude --worktree dark-mode    # tab 2
+claude --worktree tags         # tab 3
 ```
 
-## Working with parallel agents
+Each session does all of this on its own (SessionStart hook in `.claude/settings.json` running `scripts/boot.sh`):
 
-**Option A: let Claude Code create the worktree**
+1. Claude Code creates `.claude/worktrees/<name>` on branch `worktree-<name>` and copies `.env.local` (`.worktreeinclude`)
+2. `pnpm install` if `node_modules` is missing
+3. starts Docker Desktop and Postgres if they're down, then runs migrations
+4. starts Caddy if it's down
+5. starts the worktree's dev server in the background and waits until `http://<name>.demo.localhost` answers
+6. tells the agent its URL, so you just describe the feature
 
-```bash
-claude --worktree feat-a     # creates .claude/worktrees/feat-a on branch worktree-feat-a
-                             # and copies .env.local (via .worktreeinclude)
-# inside the session: "run pnpm install, then pnpm dev in the background, then build X"
-```
+When the session ends, a SessionEnd hook stops that worktree's dev server and removes its route.
+The main checkout works the same way: `claude` in the repo root brings up `http://demo.localhost`,
+and that server keeps running after the session ends.
 
-**Option B: create it yourself, then start any agent in it**
+The only setup is `brew install caddy` and Docker Desktop installed. Everything else boots itself, even after a reboot.
 
-```bash
-pnpm wt new feat-b           # same layout as above + copies .env.local + pnpm install
-cd .claude/worktrees/feat-b && claude
-```
-
-Either way, `pnpm dev` inside the worktree serves it at `http://<worktree-name>.demo.localhost`.
-`CLAUDE.md` tells agents to use that URL and how to behave around the shared DB.
+### Manual controls (optional)
 
 ```bash
+pnpm boot                    # bring this checkout up without Claude (idempotent)
+pnpm halt                    # stop this checkout's dev server
 pnpm wt ls                   # all worktrees + URL + up/stopped
-pnpm proxy routes            # what Caddy is currently routing
-pnpm url                     # this checkout's URL
-pnpm wt rm feat-b            # stop its server, drop its route, remove the worktree (branch kept)
+pnpm wt new <name>           # create a worktree yourself (same layout as claude --worktree)
+pnpm wt rm <name> [--force]  # stop server, drop route, remove worktree
 pnpm wt prune                # drop routes left behind by killed dev servers
+pnpm proxy routes            # what Caddy is currently routing
 ```
 
 Try it: add a feature on `demo.localhost`, open `feat-a.demo.localhost` and it's there (shared DB).
@@ -74,7 +70,9 @@ Set a cookie on `/whoami` in one worktree and it won't show up in another (separ
 | Worktree helper mirroring `claude --worktree` (`.claude/worktrees/<name>`, branch `worktree-<name>`, `.worktreeinclude`) | `scripts/wt.sh` |
 | Shared DB; compose project name is pinned so every worktree hits the same container | `docker-compose.yml` |
 | Migrations: advisory lock + `schema_migrations`, so concurrent agents can run them safely | `scripts/migrate.mts` |
-| Rules for agents (background dev server, additive migrations only) | `CLAUDE.md` |
+| Hooks: SessionStart → `boot.sh`, SessionEnd → `halt.sh`, CwdChanged (Claude entering a worktree mid-session) → boot if down | `.claude/settings.json`, `scripts/hooks/session.sh` |
+| Brings a checkout fully up / stops its server | `scripts/boot.sh`, `scripts/halt.sh` |
+| Rules for agents (server is already running, additive migrations only) | `CLAUDE.md` |
 
 Route files live outside the repo so they work from any worktree, and one Caddy can serve
 several projects at once. Give each project its own `APP_DOMAIN` in `.env.local`.

@@ -31,7 +31,7 @@ caddy_running || bash scripts/proxy.sh start >&2
 mkdir -p "$PIDS_DIR" .dev
 port="$(site_port "$HOST")"
 if [[ -n "$port" ]] && port_listening "$port"; then
-  started="already running"
+  started="already running"; [[ -f "$(pid_file "$HOST")" ]] || started="already running, started outside boot"
 else
   log "starting dev server"
   nohup perl -MPOSIX -e 'POSIX::setsid(); exec @ARGV' bash scripts/dev.sh \
